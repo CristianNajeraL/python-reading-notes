@@ -17,7 +17,7 @@ class Vectors:
         :param vectors: A list with vectors
         :rtype: NoReturn
         """
-        if not all(callable(vector) for vector in vectors):
+        if not all(type(vector) == list for vector in vectors):
             raise TypeError("Input must be Vector type")
 
     @staticmethod
@@ -39,8 +39,6 @@ class Vectors:
         :param vectors: A list with two vectors
         :rtype: NoReturn
         """
-        if len(vectors) != 2:
-            raise ValueError("It should be two vectors as input")
         length: int = len(vectors[0])
         if not all(len(vector) == length for vector in vectors):
             raise ValueError("Vectors should be the same length")
@@ -57,8 +55,6 @@ class Vectors:
         cls._callable_validator(vectors=[vector_x, vector_y])
         cls._type_validator(vectors=[vector_x, vector_y])
         cls._length_validator(vectors=[vector_x, vector_y])
-        if len(vector_x) != len(vector_y):
-            raise ValueError("Vectors should be the same length")
         return [x_i + y_i for x_i, y_i in zip(vector_x, vector_y)]
 
     @classmethod
