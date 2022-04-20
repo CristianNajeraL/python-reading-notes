@@ -3,6 +3,7 @@ Testing vectors methods
 """
 
 from unittest import TestCase
+
 from ..vectors import Vectors
 
 

@@ -3,8 +3,7 @@ Vector methods implementation
 """
 
 import math
-from typing import List, Union, NoReturn
-
+from typing import List, NoReturn, Union
 
 Vector = List[Union[float, int]]
 

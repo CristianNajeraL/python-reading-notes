@@ -19,3 +19,4 @@ jobs:
         pip install pytest pylint
     - run: python -m pytest
     - run: find . -type f -name "*.py" | xargs pylint --fail-under 10
+    - run: python -m isort . --check-only --verbose
