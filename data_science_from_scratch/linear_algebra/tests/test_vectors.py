@@ -2,12 +2,12 @@
 Testing vectors methods
 """
 
-from unittest import TestCase
+from unittest import TestCase  # pragma: no cover
 
-from ..vectors import Vectors
+from ..vectors import Vectors  # pragma: no cover
 
 
-class TestVectors(TestCase):
+class TestVectors(TestCase):  # pragma: no cover
     """
     This class contains tests for vector methods
     """
