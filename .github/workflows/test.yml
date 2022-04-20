@@ -18,4 +18,4 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest pylint
     - run: python -m pytest
-    - run: find . -type f -name "*.py" | xargs pylint --fail-under 9
+    - run: find . -type f -name "*.py" | xargs pylint --fail-under 10
