@@ -2,8 +2,9 @@
 Vector methods implementation
 """
 
-import math
 from typing import List, NoReturn, Union
+import math
+
 
 Vector = List[Union[float, int]]
 
