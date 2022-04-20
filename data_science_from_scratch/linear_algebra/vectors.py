@@ -1,3 +1,7 @@
+"""
+Vector methods implementation
+"""
+
 import math
 from typing import List, Union, NoReturn
 
@@ -11,29 +15,28 @@ class Vectors:
     """
 
     @staticmethod
-    def _callable_validator(vectors: List[Vector]) -> NoReturn:
+    def callable_validator(vectors: List[Vector]) -> NoReturn:
         """
         Validate if the input has the appropriate data type
         :param vectors: A list with vectors
         :rtype: NoReturn
         """
-        if not all(type(vector) == list for vector in vectors):
+        if not all(isinstance(vector, list) for vector in vectors):
             raise TypeError("Input must be Vector type")
 
     @staticmethod
-    def _type_validator(vectors: List[Vector]) -> NoReturn:
+    def type_validator(vectors: List[Vector]) -> NoReturn:
         """
         Validate if the values inside the vectors are integers or floating points numbers
         :param vectors: A list with vectors
         :rtype: NoReturn
         """
-        if not all(
-                [all(boolean) for boolean in [[type(value) in [float, int] for value in vector] for vector in vectors]]
-        ):
+        value_booleans = [[type(value) in [float, int] for value in vector] for vector in vectors]
+        if not all((all(boolean) for boolean in value_booleans)):
             raise TypeError("Input must be float or integer values")
 
     @staticmethod
-    def _length_validator(vectors: List[Vector]) -> NoReturn:
+    def length_validator(vectors: List[Vector]) -> NoReturn:
         """
         Validate if two vectors have the same length
         :param vectors: A list with two vectors
@@ -52,9 +55,9 @@ class Vectors:
         :return: The sum of the vector_x and vector_y element-wise
         :rtype: Vector
         """
-        cls._callable_validator(vectors=[vector_x, vector_y])
-        cls._type_validator(vectors=[vector_x, vector_y])
-        cls._length_validator(vectors=[vector_x, vector_y])
+        cls.callable_validator(vectors=[vector_x, vector_y])
+        cls.type_validator(vectors=[vector_x, vector_y])
+        cls.length_validator(vectors=[vector_x, vector_y])
         return [x_i + y_i for x_i, y_i in zip(vector_x, vector_y)]
 
     @classmethod
@@ -66,9 +69,9 @@ class Vectors:
         :return: The subtraction of the vector_x and vector_y element-wise
         :rtype: Vector
         """
-        cls._callable_validator(vectors=[vector_x, vector_y])
-        cls._type_validator(vectors=[vector_x, vector_y])
-        cls._length_validator(vectors=[vector_x, vector_y])
+        cls.callable_validator(vectors=[vector_x, vector_y])
+        cls.type_validator(vectors=[vector_x, vector_y])
+        cls.length_validator(vectors=[vector_x, vector_y])
         return [x_i - y_i for x_i, y_i in zip(vector_x, vector_y)]
 
     @classmethod
@@ -81,8 +84,8 @@ class Vectors:
         """
         if not vectors:
             raise TypeError("Not vectors provided.")
-        cls._callable_validator(vectors=vectors)
-        cls._type_validator(vectors=vectors)
+        cls.callable_validator(vectors=vectors)
+        cls.type_validator(vectors=vectors)
         num_elements: int = len(vectors[0])
         if not all(len(v) == num_elements for v in vectors):
             raise ValueError("Vectors should be the same length")
@@ -97,12 +100,11 @@ class Vectors:
         :return: The multiplication of each value inside the vector by the scalar
         :rtype: Vector
         """
-        cls._callable_validator(vectors=[vector])
-        cls._type_validator(vectors=[vector])
-        if type(scalar) in [float, int]:
-            return [scalar * v_i for v_i in vector]
-        else:
+        cls.callable_validator(vectors=[vector])
+        cls.type_validator(vectors=[vector])
+        if type(scalar) not in [float, int]:
             raise TypeError("Input 'scalar' should be an integer or a float")
+        return [scalar * v_i for v_i in vector]
 
     @classmethod
     def vector_mean(cls, vectors: List[Vector]) -> Vector:
@@ -126,7 +128,7 @@ class Vectors:
         :return: The value of the dot product operation between two vectors
         :rtype: float or int
         """
-        cls._length_validator([vector_x, vector_y])
+        cls.length_validator([vector_x, vector_y])
         return sum(x_i * y_i for x_i, y_i in zip(vector_x, vector_y))
 
     @classmethod
