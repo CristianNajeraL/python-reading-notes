@@ -7,7 +7,6 @@ from typing import Callable, List, Tuple
 
 from .vectors import Vector
 
-
 Matrix = List[List[float]]
 
 
