@@ -5,7 +5,8 @@ Vector methods implementation
 import math
 from typing import List, NoReturn, Union
 
-Vector = List[Union[float, int]]
+Value = Union[float, int]
+Vector = List[Value]
 
 
 class Vectors:
@@ -91,7 +92,7 @@ class Vectors:
         return [sum(vector[i] for vector in vectors) for i in range(num_elements)]
 
     @classmethod
-    def scalar_multiply(cls, scalar: Union[float, int], vector: Vector) -> Vector:
+    def scalar_multiply(cls, scalar: Value, vector: Vector) -> Vector:
         """
         Multiplies every element by a scalar
         :param scalar: Integer or floating point number
