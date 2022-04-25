@@ -81,7 +81,8 @@ class Probability:
         :param mean: Mean
         :param sigma: Standard deviation
         :param tolerance: Tolerance
-        :return:
+        :return: z value for given probability
+        :rtype: Value
         """
         if mean != 0 or sigma != 1:
             return mean + sigma * cls.inverse_normal_cdf(probability=probability,
