@@ -25,4 +25,3 @@ class TestRescaling(TestCase):
         means, standard_deviations = r.scale(data=r.rescale(data=self.vectors))
         self.assertEqual(means, [0, 0, 1])
         self.assertEqual(standard_deviations, [1, 1, 0])
-
