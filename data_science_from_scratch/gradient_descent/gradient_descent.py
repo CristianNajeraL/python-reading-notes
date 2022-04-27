@@ -16,7 +16,8 @@ class GradientDescent:  # pylint: disable=R0913
     """
 
     @staticmethod
-    def gradient_step(vector: Vector, gradient: Vector, step_size: float) -> Vector:  # pragma: no cover
+    def gradient_step(vector: Vector, gradient: Vector,
+                      step_size: float) -> Vector:  # pragma: no cover
         """
         Update gradient with the step
         :param vector: Vector

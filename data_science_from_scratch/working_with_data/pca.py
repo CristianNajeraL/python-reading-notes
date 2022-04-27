@@ -2,8 +2,9 @@
 How to implement principal component analysis
 """
 
-import tqdm
 from typing import List
+
+import tqdm
 
 from ..gradient_descent import GradientDescent as gd
 from ..linear_algebra.vectors import Vector
@@ -50,20 +51,21 @@ class PCA:
         return sum(v.dot(vector_x=vector, vector_y=direction) ** 2 for vector in data)
 
     @classmethod
-    def directional_variance_gradient(cls, data: List[Vector], weights: Vector) -> Vector:
+    def directional_variance_gradient(cls, data: List[Vector], vector_y: Vector) -> Vector:
         """
         The gradient of directional variance with respect to w
         :param data: Input data
-        :param weights: Input vector
+        :param vector_y: Input vector
         :return: Vector
         :rtype: Vector
         """
-        direction = cls.direction(weights=weights)
+        direction = cls.direction(vector_y=vector_y)
         return [sum(2 * v.dot(vector_x=vector, vector_y=direction) * vector[i] for vector in data)
-                for i in range(len(weights))]
+                for i in range(len(vector_y))]
 
     @classmethod
-    def first_principal_component(cls, data: List[Vector], steps: int = 100, step_size: float = 0.1) -> Vector:
+    def first_principal_component(cls, data: List[Vector], steps: int = 100,
+                                  step_size: float = 0.1) -> Vector:
         """
         First principal component
         :param data: Input data
@@ -73,13 +75,13 @@ class PCA:
         :rtype: Vector
         """
         guess = [1.0 for _ in data[0]]
-        with tqdm.trange(steps) as t:
-            for _ in t:
-                directional_variance = cls.directional_variance(data=data, weights=guess)
-                gradient = cls.directional_variance_gradient(data=data, weights=guess)
+        with tqdm.trange(steps) as loop:
+            for _ in loop:
+                directional_variance = cls.directional_variance(data=data, vector_y=guess)
+                gradient = cls.directional_variance_gradient(data=data, vector_y=guess)
                 guess = gd.gradient_step(vector=guess, gradient=gradient, step_size=step_size)
-                t.set_description(f"Directional Variance: {directional_variance:.3f}")
-        return cls.direction(weights=guess)
+                loop.set_description(f"Directional Variance: {directional_variance:.3f}")
+        return cls.direction(vector_y=guess)
 
     @staticmethod
     def project(vector_x: Vector, vector_y: Vector) -> Vector:
