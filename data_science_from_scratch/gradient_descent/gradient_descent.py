@@ -16,8 +16,7 @@ class GradientDescent:  # pylint: disable=R0913
     """
 
     @staticmethod
-    def _gradient_step(vector: Vector, gradient: Vector,
-                       step_size: float) -> Vector:  # pragma: no cover
+    def gradient_step(vector: Vector, gradient: Vector, step_size: float) -> Vector:  # pragma: no cover
         """
         Update gradient with the step
         :param vector: Vector
@@ -55,7 +54,7 @@ class GradientDescent:  # pylint: disable=R0913
         """
         for epoch in range(steps):
             gradient = cls._sum_of_squares_gradient(vector=vector)
-            vector = cls._gradient_step(vector=vector, gradient=gradient, step_size=step_size)
+            vector = cls.gradient_step(vector=vector, gradient=gradient, step_size=step_size)
             if show:
                 if epoch % (steps // 10) == 0 or epoch == (steps - 1):
                     print(epoch, vector)
@@ -99,15 +98,15 @@ class GradientDescent:  # pylint: disable=R0913
                         [cls._linear_gradient(
                             value_x=value_x, value_y=value_y, theta=theta
                         ) for value_x, value_y in batch])
-                    theta = cls._gradient_step(vector=theta, gradient=gradient,
-                                               step_size=-learning_rate)
+                    theta = cls.gradient_step(vector=theta, gradient=gradient,
+                                              step_size=-learning_rate)
                 else:
                     gradient = Vectors.vector_mean(
                         [cls._linear_gradient(
                             value_x=value_x, value_y=value_y, theta=theta
                         ) for value_x, value_y in inputs])
-                    theta = cls._gradient_step(vector=theta, gradient=gradient,
-                                               step_size=-learning_rate)
+                    theta = cls.gradient_step(vector=theta, gradient=gradient,
+                                              step_size=-learning_rate)
                     break
             if epoch % (steps // 10) == 0 or epoch == (steps - 1):
                 print(epoch, theta)
