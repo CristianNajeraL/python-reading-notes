@@ -94,6 +94,7 @@ class MultipleRegression:
         :param values_x: Input values
         :param values_y: Output values
         :param betas: Coefficients to make the prediction
+        :return: R squared value
         """
         sum_of_squared_errors = sum(
             cls.error(
