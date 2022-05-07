@@ -8,6 +8,8 @@ from unittest import TestCase
 
 from ..multiple_regression import MultipleRegression as mr
 
+np.random.seed(17)
+
 
 class TestMultipleRegression(TestCase):
     """
@@ -17,6 +19,12 @@ class TestMultipleRegression(TestCase):
     values: list = [1, 2, 3]
     value_y: int = 30
     betas: list = [4, 4, 4]
+    values_x: list = [[1.0, (np.random.random() < 0.5) * 1] + list(
+        [float(x) for x in i]) for i in np.random.normal(size=(500, 2))]
+    values_y: list = list((np.random.normal(size=500)))
+    values_y = [float(x) for x in values_y]
+    mr_betas: list = mr.least_squares_fit(values_x=values_x, values_y=values_y, learning_rate=1e-2,
+                                          num_steps=5000, batch_size=len(values_y))
 
     def test_predict(self):
         """Successfully test"""
@@ -40,15 +48,12 @@ class TestMultipleRegression(TestCase):
 
     def test_least_squares_fit(self):
         """Successfully test"""
-        np.random.seed(17)
-        values_x: list = [[1.0, (np.random.random() < 0.5) * 1] + list(
-            [float(x) for x in i]) for i in np.random.normal(size=(500, 2))]
-        values_y: list = list((np.random.normal(size=500)))
-        values_y = [float(x) for x in values_y]
-        betas: list = mr.least_squares_fit(values_x=values_x, values_y=values_y, learning_rate=1e-2,
-                                           num_steps=5000, batch_size=len(values_y))
-        self.assertAlmostEqual(betas[0], 0.18271199141376873)
-        self.assertAlmostEqual(betas[1], -0.17492736)
-        self.assertAlmostEqual(betas[2], 0.00750139)
-        self.assertAlmostEqual(betas[3], -0.0429139)
+        self.assertAlmostEqual(self.mr_betas[0], 0.18271199141376873)
+        self.assertAlmostEqual(self.mr_betas[1], -0.17492736)
+        self.assertAlmostEqual(self.mr_betas[2], 0.00750139)
+        self.assertAlmostEqual(self.mr_betas[3], -0.0429139)
 
+    def test_multiple_r_squared(self):
+        """Successfully test"""
+        r_squared = mr.multiple_r_squared(values_x=self.values_x, values_y=self.values_y, betas=self.mr_betas)
+        self.assertTrue(0.009 <= r_squared <= 0.01)

@@ -10,6 +10,7 @@ from typing import List
 from ..gradient_descent.gradient_descent import GradientDescent as gd
 from ..linear_algebra.vectors import Value, Vector
 from ..linear_algebra.vectors import Vectors as v
+from ..simple_linear_regression import SimpleLinearRegression as slr
 
 
 class MultipleRegression:
@@ -28,7 +29,7 @@ class MultipleRegression:
         return v.dot(vector_x=values, vector_y=betas)
 
     @classmethod
-    def error(cls, values: Vector, betas: Vector, value_y: Value) -> Value:
+    def error(cls, values: Vector, value_y: Value, betas: Vector) -> Value:
         """
         Calculates the error between the prediction and the actual value
         :param betas: Coefficients to make the prediction
@@ -84,3 +85,20 @@ class MultipleRegression:
                     values=x, value_y=y, betas=guess) for x, y in zip(batch_x, batch_y)])
                 guess = gd.gradient_step(vector=guess, gradient=gradient, step_size=-learning_rate)
         return guess
+
+    @classmethod
+    def multiple_r_squared(cls, values_x: List[Vector], values_y: Vector, betas: Vector) -> Value:
+        """
+        The fraction of variation of the output captured by the model, which equals
+            1 - the fraction of variation of the output not captured by the model
+        :param values_x: Input values
+        :param values_y: Output values
+        :param betas: Coefficients to make the prediction
+        """
+        sum_of_squared_errors = sum(
+            cls.error(
+                values=value_x,
+                value_y=value_y,
+                betas=betas
+            ) ** 2 for value_x, value_y in zip(values_x, values_y))
+        return 1.0 - sum_of_squared_errors / slr.total_sum_of_squares(values_y)
