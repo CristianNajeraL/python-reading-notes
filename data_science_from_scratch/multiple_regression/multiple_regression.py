@@ -3,9 +3,8 @@ Multiple Regression implementation module
 """
 
 import random
-import tqdm
-
 from typing import Callable, List, Tuple, TypeVar, Union
+import tqdm
 
 from ..gradient_descent.gradient_descent import GradientDescent as gd
 from ..linear_algebra.vectors import Value, Vector
@@ -17,7 +16,7 @@ X = TypeVar('X')
 Stat = TypeVar('Stat')
 
 
-class MultipleRegression:
+class MultipleRegression:  # pylint: disable=R0913
     """
     Multiple regression implementation class
     """
@@ -189,7 +188,7 @@ class MultipleRegression:
     def least_squares_fit_ridge(cls, values_x: List[Vector], values_y: Union[Vector, List[Vector]],
                                 alpha: Value = 0.0, learning_rate: float = 1e-3,
                                 num_steps: int = 1000,
-                                batch_size: int = 1) -> Vector:  # pylint: disable=too-many-arguments
+                                batch_size: int = 1) -> Vector:
         """
         Find the beta that minimizes the sum of squared errors
             assuming the model y = dot(x, beta)
