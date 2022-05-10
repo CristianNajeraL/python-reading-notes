@@ -2,13 +2,12 @@
 Multiple Regression implementation testing module
 """
 import random
+from unittest import TestCase
 
 import numpy as np
 
-from unittest import TestCase
-
-from ..multiple_regression import MultipleRegression as mr
 from ...statistics import Tools as t
+from ..multiple_regression import MultipleRegression as mr
 
 
 class TestMultipleRegression(TestCase):

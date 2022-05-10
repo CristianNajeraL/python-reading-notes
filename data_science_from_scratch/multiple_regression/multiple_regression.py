@@ -4,6 +4,7 @@ Multiple Regression implementation module
 
 import random
 from typing import Callable, List, Tuple, TypeVar, Union
+
 import tqdm
 
 from ..gradient_descent.gradient_descent import GradientDescent as gd
