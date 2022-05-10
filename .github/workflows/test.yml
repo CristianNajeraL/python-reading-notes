@@ -1,12 +1,6 @@
 name: Reading notes test
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   build:
@@ -24,5 +18,5 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - run: python -m pytest --cov --cov-report term-missing --cov-fail-under=100 --no-cov-on-fail
-    - run: find . -type f -name "*.py" -not -path "./venv/*"  | xargs pylint --fail-under 10
+    - run: find . -type f -name "*.py" -not -path "./venv/*" -not -path "*/tests/*" | xargs pylint --fail-under 10
     - run: python -m isort . --check-only --verbose
