@@ -118,7 +118,8 @@ class MultipleRegression:
         return [random.choice(data) for _ in data]
 
     @classmethod
-    def bootstrap_statistic(cls, data: List[X], stats_fn: Callable[[List[X]], Stat], num_samples: int) -> List[Stat]:
+    def bootstrap_statistic(cls, data: List[X], stats_fn: Callable[[List[X]], Stat],
+                            num_samples: int) -> List[Stat]:
         """
         Evaluates stats_fn on num_samples bootstrap samples from data
         """
@@ -158,7 +159,8 @@ class MultipleRegression:
         return alpha * v.dot(vector_x=betas[1:], vector_y=betas[1:])
 
     @classmethod
-    def squared_error_ridge(cls, values_x: Vector, value_y: float, betas: Vector, alpha: float) -> Value:
+    def squared_error_ridge(cls, values_x: Vector, value_y: float, betas: Vector,
+                            alpha: float) -> Value:
         """
         Estimate error plus ridge penalty on betas
         """
@@ -173,17 +175,21 @@ class MultipleRegression:
         return [0.] + [2 * alpha * beta_j for beta_j in betas[1:]]
 
     @classmethod
-    def squared_error_ridge_penalty(cls, values_x: Vector, value_y: Value, betas: Vector, alpha: Value) -> Vector:
+    def squared_error_ridge_penalty(cls, values_x: Vector, value_y: Value, betas: Vector,
+                                    alpha: Value) -> Vector:
         """
         The gradient corresponding to the ith squared error term including the ridge penalty
         """
-        return v.add(vector_x=cls.squared_error_gradient(values=values_x, value_y=value_y, betas=betas),
-                     vector_y=cls._ridge_penalty_gradient(betas=betas, alpha=alpha))
+        return v.add(vector_x=cls.squared_error_gradient(
+            values=values_x, value_y=value_y, betas=betas),
+            vector_y=cls._ridge_penalty_gradient(
+                betas=betas, alpha=alpha))
 
     @classmethod
     def least_squares_fit_ridge(cls, values_x: List[Vector], values_y: Union[Vector, List[Vector]],
-                                alpha: Value = 0.0, learning_rate: float = 1e-3, num_steps: int = 1000,
-                                batch_size: int = 1) -> Vector:
+                                alpha: Value = 0.0, learning_rate: float = 1e-3,
+                                num_steps: int = 1000,
+                                batch_size: int = 1) -> Vector:  # pylint: disable=too-many-arguments
         """
         Find the beta that minimizes the sum of squared errors
             assuming the model y = dot(x, beta)
