@@ -3,16 +3,15 @@ Logistic Regression implementation module
 """
 
 import math
-import tqdm
 from typing import List, Tuple
 
-from ..linear_algebra.vectors import Value, Vector, Vectors
-from ..working_with_data.rescaling import Rescaling as Re
-from ..multiple_regression.multiple_regression import MultipleRegression as Mr
+import tqdm
+
 from ..gradient_descent.gradient_descent import GradientDescent as Gd
+from ..linear_algebra.vectors import Value, Vector, Vectors
 
 
-class LogisticRegression:
+class LogisticRegression:  # pylint: disable=R0913
     """
     Logistic regression implementation class
     """
@@ -33,8 +32,8 @@ class LogisticRegression:
         :param value_x: Value to be used
         :return: Value after derivative on logistic function
         """
-        y = cls.logistic(value_x=value_x)
-        return y * (1 - y)
+        prediction = cls.logistic(value_x=value_x)
+        return prediction * (1 - prediction)
 
     @classmethod
     def _negative_log_likelihood(cls, value_x: Vector, value_y: Value, beta: Vector) -> Value:
@@ -47,11 +46,11 @@ class LogisticRegression:
         """
         if value_y == 1:
             return -math.log(cls.logistic(value_x=Vectors.dot(vector_x=value_x, vector_y=beta)))
-        else:
-            return -math.log(1 - cls.logistic(value_x=Vectors.dot(vector_x=value_x, vector_y=beta)))
+        return -math.log(1 - cls.logistic(value_x=Vectors.dot(vector_x=value_x, vector_y=beta)))
 
     @classmethod
-    def negative_log_likelihood(cls, value_x: List[Vector], value_y: List[Value], beta: Vector) -> Value:
+    def negative_log_likelihood(cls, value_x: List[Vector], value_y: List[Value],
+                                beta: Vector) -> Value:
         """
         The negative likelihood of an array of data points
         :param value_x: Input values
@@ -59,10 +58,15 @@ class LogisticRegression:
         :param beta: Coefficients vector
         :return: Negative likelihood
         """
-        return sum(cls._negative_log_likelihood(value_x=x, value_y=y, beta=beta) for x, y in zip(value_x, value_y))
+        return sum(
+            cls._negative_log_likelihood(
+                value_x=x, value_y=y, beta=beta
+            ) for x, y in zip(value_x, value_y)
+        )
 
     @classmethod
-    def _negative_log_partial_j(cls, value_x: Vector, value_y: Value, beta: Vector, value_j: Value) -> Value:
+    def _negative_log_partial_j(cls, value_x: Vector, value_y: Value, beta: Vector,
+                                value_j: Value) -> Value:
         """
         The jth partial derivative for one data point
         :param value_x: Input values
@@ -71,7 +75,9 @@ class LogisticRegression:
         :param value_j: Index of the data point
         :return: Partial derivative
         """
-        return -(value_y - cls.logistic(value_x=Vectors.dot(vector_x=value_x, vector_y=beta))) * value_x[value_j]
+        return -(
+                value_y - cls.logistic(value_x=Vectors.dot(vector_x=value_x, vector_y=beta))
+        ) * value_x[value_j]
 
     @classmethod
     def _negative_log_gradient(cls, value_x: Vector, value_y: Value, beta: Vector) -> Vector:
@@ -86,7 +92,8 @@ class LogisticRegression:
                                             value_j=j) for j in range(len(beta))]
 
     @classmethod
-    def negative_log_gradient(cls, value_x: List[Vector], value_y: List[float], beta: Vector) -> Vector:
+    def negative_log_gradient(cls, value_x: List[Vector], value_y: List[float],
+                              beta: Vector) -> Vector:
         """
         The gradient for an array of data points
         :param value_x: Input values
@@ -94,8 +101,12 @@ class LogisticRegression:
         :param beta: Coefficients vector
         :return: Gradient value
         """
-        return Vectors.vector_sum(vectors=[cls._negative_log_gradient(value_x=x, value_y=y,
-                                                                      beta=beta) for x, y in zip(value_x, value_y)])
+        return Vectors.vector_sum(
+            vectors=[
+                cls._negative_log_gradient(
+                    value_x=x, value_y=y, beta=beta) for x, y in zip(value_x, value_y)
+            ]
+        )
 
     @classmethod
     def fit_model(cls, beta: Vector, x_train: List[Vector], y_train: Vector, steps: Value,
@@ -110,7 +121,7 @@ class LogisticRegression:
         :return: Beta vector and loss value
         """
         with tqdm.trange(steps) as step:
-            for epoch in step:
+            for _ in step:
                 gradient = cls.negative_log_gradient(value_x=x_train, value_y=y_train, beta=beta)
                 beta = Gd.gradient_step(vector=beta, gradient=gradient, step_size=-learning_rate)
                 loss = cls.negative_log_likelihood(value_x=x_train, value_y=y_train, beta=beta)
@@ -118,7 +129,8 @@ class LogisticRegression:
         return beta, loss
 
     @classmethod
-    def precision_recall(cls, x_test: List[Vector], y_test: Vector, beta: Vector, threshold: Value = 0.5) -> Tuple:
+    def precision_recall(cls, x_test: List[Vector], y_test: Vector, beta: Vector,
+                         threshold: Value = 0.5) -> Tuple:
         """
         Evaluate precision and recall of the model
         :param threshold: Probability to be considered True
