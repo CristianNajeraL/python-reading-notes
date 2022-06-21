@@ -2,15 +2,15 @@
 Logistic Regression implementation testing module
 """
 
-import numpy as np
+from typing import List, Tuple
+from unittest import TestCase
 
-from ..logistic_regression import LogisticRegression as Lr
+import numpy as np
 
 from ...linear_algebra.vectors import Value, Vector
 from ...machine_learning.machine_learning import MachineLearning as Ml
 from ...working_with_data.rescaling import Rescaling as Re
-from typing import List, Tuple
-from unittest import TestCase
+from ..logistic_regression import LogisticRegression as Lr
 
 
 class TestLogisticRegression(TestCase):
@@ -38,7 +38,7 @@ class TestLogisticRegression(TestCase):
     values_y: list = [float(i[3]) for i in data]
 
     rescaled_x: List[Vector] = Re.rescale(data=values_x)
-    x_train, x_test, y_train, y_test = Ml.train_test_split(data_x=rescaled_x, data_y=values_y, test_share=0.33)
+    x_train, x_test, y_train, y_test = Ml.train_test_split(data_x=rescaled_x, data_y=values_y, test_share=0.25)
 
     learning_rate: Value = 0.01
     beta: List = [float(i) for i in np.random.normal(size=3)]
@@ -52,7 +52,13 @@ class TestLogisticRegression(TestCase):
         self.assertTrue(self.result[0][1] < 10)
         self.assertTrue(self.result[0][2] < 10)
 
+    def test_logistic_prime(self):
+        """Successfully test"""
+        self.assertTrue(Lr.logistic_prime(value_x=0.5) > 0.2)
+
     def test_precision_recall(self):
         """Successfully test"""
-        # Lr.precision_recall()
-        print(self.result)
+        precision, recall = Lr.precision_recall(
+            x_test=self.x_test, y_test=list(np.zeros(25)) + list(np.ones(25)), beta=self.beta)
+        self.assertTrue(precision > 0.3)
+        self.assertTrue(recall > 0.2)
