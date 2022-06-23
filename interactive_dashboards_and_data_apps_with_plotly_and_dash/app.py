@@ -3,9 +3,8 @@ Dash app
 """
 
 import dash
-from dash import html
 import dash_bootstrap_components as dbc
-
+from dash import html
 
 GITHUB_LINK = 'https://github.com/PacktPublishing/' \
               'Interactive-Dashboards-and-Data-Apps-with-Plotly-and-Dash'
