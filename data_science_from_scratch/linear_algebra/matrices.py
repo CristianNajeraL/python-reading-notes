@@ -2,10 +2,9 @@
 Linear algebra methods related to matrices
 """
 
-
 from typing import Callable, List, Tuple
 
-from .vectors import Vector
+from .vectors import Value, Vector
 
 Matrix = List[List[float]]
 
@@ -61,6 +60,16 @@ class Matrices:
         """
         return [[entry_fn(i, j) for j in range(num_cols)] for i in range(num_rows)]
 
+    @staticmethod
+    def data_fn(value_i: Value, value_j: Value) -> Value:
+        """
+        Check if indexes match
+        :param value_i: Row index
+        :param value_j: Column index
+        :return: 1 if the indexes match, otherwise 0
+        """
+        return 1 if value_i == value_j else 0
+
     @classmethod
     def identity_matrix(cls, size: int) -> Matrix:
         """
@@ -69,5 +78,4 @@ class Matrices:
         :return: Matrix with size, size shape
         :rtype: Matrix
         """
-        data_fn = lambda i, j: 1 if i == j else 0
-        return cls.make_matrix(num_rows=size, num_cols=size, entry_fn=data_fn)
+        return cls.make_matrix(num_rows=size, num_cols=size, entry_fn=cls.data_fn)
