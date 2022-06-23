@@ -60,7 +60,8 @@ app.layout = html.Div(
                             [
                                 html.Br(),
                                 html.Li(
-                                    'Book title: Interactive Dashboards and Data Apps with Plotly and Dash'
+                                    'Book title: Interactive Dashboards and '
+                                    'Data Apps with Plotly and Dash'
                                 ),
                                 html.Li(
                                     [
