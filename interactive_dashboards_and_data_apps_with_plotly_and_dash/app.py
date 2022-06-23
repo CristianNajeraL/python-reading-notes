@@ -2,13 +2,25 @@
 Dash app
 """
 
+from typing import List
+
 import dash
 import dash_bootstrap_components as dbc
-from dash import html
+import pandas as pd
+from dash import dcc, html
+from dash.dependencies import Input, Output
 
 GITHUB_LINK = 'https://github.com/PacktPublishing/' \
               'Interactive-Dashboards-and-Data-Apps-with-Plotly-and-Dash'
 WORLD_BANK_LINK = 'https://datacatalog.worldbank.org/dataset/poverty-and-equity-database'
+poverty_data = pd.read_csv("data/PovStatsData.csv")
+population_2010 = dict(
+    zip(
+        poverty_data[
+            (poverty_data["Indicator Name"] == "Population, total")].loc[:, "Country Name"].values,
+        poverty_data[(poverty_data["Indicator Name"] == "Population, total")].loc[:, "2010"].values
+    )
+)
 
 app = dash.Dash(
     __name__,
@@ -16,6 +28,7 @@ app = dash.Dash(
         dbc.themes.BOOTSTRAP
     ]
 )
+
 
 app.layout = html.Div(
     [
@@ -27,6 +40,19 @@ app.layout = html.Div(
             }
         ),
         html.H2("The World Bank"),
+        dcc.Dropdown(
+            id="country",
+            options=[
+                {
+                    "label": country,
+                    "value": country
+                } for country in poverty_data["Country Name"].unique()
+            ]
+        ),
+        html.Div(
+            id="report"
+        ),
+        html.Br(),
         dbc.Tabs(
             [
                 dbc.Tab(
@@ -81,6 +107,28 @@ app.layout = html.Div(
         )
     ]
 )
+
+
+@app.callback(
+    Output("report", "children"),
+    Input("country", "value")
+)
+def display_country_report(country: str) -> List:
+    """
+    Generates population report by country
+    :param country: Selected country in the dropdown
+    :return: Country report
+    """
+    if country is None:
+        return [
+            html.H3("World"),
+            f"The world population in 2010 was {population_2010['World']:,.0f}."
+        ]
+    return [
+        html.H3(country),
+        f"The population of {country} in 2010 was {population_2010[country]:,.0f}."
+    ]
+
 
 if __name__ == "__main__":
     app.run_server(debug=True)
