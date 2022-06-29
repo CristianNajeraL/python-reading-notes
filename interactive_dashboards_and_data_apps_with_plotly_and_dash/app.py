@@ -7,9 +7,9 @@ from typing import List
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
+import plotly.graph_objects as go
 from dash import dcc, html
 from dash.dependencies import Input, Output
-import plotly.graph_objects as go
 
 GITHUB_LINK = 'https://github.com/PacktPublishing/' \
               'Interactive-Dashboards-and-Data-Apps-with-Plotly-and-Dash'
@@ -54,6 +54,7 @@ app.layout = html.Div(
         html.H2("The World Bank"),
         dcc.Dropdown(
             id="country",
+            value="World",
             options=[
                 {
                     "label": country,
@@ -142,11 +143,6 @@ def display_country_report(country: str) -> List:
     :param country: Selected country in the dropdown
     :return: Country report
     """
-    if country is None:
-        return [
-            html.H3("World"),
-            f"The world population in 2010 was {population_2010['World']:,.0f}."
-        ]
     return [
         html.H3(country),
         f"The population of {country} in 2010 was {population_2010[country]:,.0f}."
@@ -158,6 +154,11 @@ def display_country_report(country: str) -> List:
     Input("year_dropdown", "value")
 )
 def plot_countries_by_population(year):
+    """
+    Generates figure with countries population
+    :param year: Year to look up
+    :return: Population figure
+    """
     year_df = population_df[['Country Name', year]].sort_values(year, ascending=False)[:20]
     fig = go.Figure()
     fig.add_bar(x=year_df['Country Name'], y=year_df[year])
