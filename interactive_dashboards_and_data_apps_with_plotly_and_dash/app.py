@@ -54,6 +54,7 @@ app.layout = html.Div(
         html.H2("The World Bank"),
         dcc.Dropdown(
             id="country",
+            value="World",
             options=[
                 {
                     "label": country,
@@ -142,11 +143,6 @@ def display_country_report(country: str) -> List:
     :param country: Selected country in the dropdown
     :return: Country report
     """
-    if country is None:
-        return [
-            html.H3("World"),
-            f"The world population in 2010 was {population_2010['World']:,.0f}."
-        ]
     return [
         html.H3(country),
         f"The population of {country} in 2010 was {population_2010[country]:,.0f}."
