@@ -7,6 +7,7 @@ from typing import List
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
+import plotly.graph_objects as go
 from dash import dcc, html
 from dash.dependencies import Input, Output
 
@@ -21,6 +22,17 @@ population_2010 = dict(
         poverty_data[(poverty_data["Indicator Name"] == "Population, total")].loc[:, "2010"].values
     )
 )
+REGIONS = [
+    'East Asia & Pacific', 'Europe & Central Asia', 'Fragile and conflict affected situations',
+    'High income', 'IDA countries classified as fragile situations', 'IDA total',
+    'Latin America & Caribbean', 'Low & middle income', 'Low income',
+    'Lower middle income', 'Middle East & North Africa', 'Middle income',
+    'South Asia', 'Sub-Saharan Africa', 'Upper middle income', 'World'
+]
+population_df = poverty_data[
+    ~poverty_data['Country Name'].isin(REGIONS) &
+    (poverty_data['Indicator Name'] == 'Population, total')
+]
 
 app = dash.Dash(
     __name__,
@@ -42,6 +54,7 @@ app.layout = html.Div(
         html.H2("The World Bank"),
         dcc.Dropdown(
             id="country",
+            value="World",
             options=[
                 {
                     "label": country,
@@ -53,6 +66,17 @@ app.layout = html.Div(
             id="report"
         ),
         html.Br(),
+        dcc.Dropdown(
+            id='year_dropdown',
+            value='2010',
+            options=[
+                {
+                    'label': year,
+                    'value': str(year)
+                } for year in range(1974, 2019)
+            ]
+        ),
+        dcc.Graph(id='population_chart'),
         dbc.Tabs(
             [
                 dbc.Tab(
@@ -119,15 +143,27 @@ def display_country_report(country: str) -> List:
     :param country: Selected country in the dropdown
     :return: Country report
     """
-    if country is None:
-        return [
-            html.H3("World"),
-            f"The world population in 2010 was {population_2010['World']:,.0f}."
-        ]
     return [
         html.H3(country),
         f"The population of {country} in 2010 was {population_2010[country]:,.0f}."
     ]
+
+
+@app.callback(
+    Output("population_chart", "figure"),
+    Input("year_dropdown", "value")
+)
+def plot_countries_by_population(year):
+    """
+    Generates figure with countries population
+    :param year: Year to look up
+    :return: Population figure
+    """
+    year_df = population_df[['Country Name', year]].sort_values(year, ascending=False)[:20]
+    fig = go.Figure()
+    fig.add_bar(x=year_df['Country Name'], y=year_df[year])
+    fig.layout.title = f'Top twenty countries by population - {year}'
+    return fig
 
 
 if __name__ == "__main__":
