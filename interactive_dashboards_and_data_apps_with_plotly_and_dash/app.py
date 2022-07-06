@@ -10,11 +10,19 @@ import pandas as pd
 import plotly.graph_objects as go
 from dash import dcc, html
 from dash.dependencies import Input, Output
+from dash.exceptions import PreventUpdate
+import plotly.express as px
+
 
 GITHUB_LINK = 'https://github.com/PacktPublishing/' \
               'Interactive-Dashboards-and-Data-Apps-with-Plotly-and-Dash'
 WORLD_BANK_LINK = 'https://datacatalog.worldbank.org/dataset/poverty-and-equity-database'
+GINI = 'GINI index (World Bank estimate)'
+ID_VARS = ['Country Name', 'Country Code', 'Indicator Name', 'Indicator Code']
+
 poverty_data = pd.read_csv("data/PovStatsData.csv")
+country = pd.read_csv('data/PovStatsCountry.csv', na_values='', keep_default_na=False)
+
 population_2010 = dict(
     zip(
         poverty_data[
@@ -22,6 +30,23 @@ population_2010 = dict(
         poverty_data[(poverty_data["Indicator Name"] == "Population, total")].loc[:, "2010"].values
     )
 )
+
+data_melt = poverty_data.melt(id_vars=ID_VARS, var_name='year').dropna(subset=['value'])
+data_melt['year'] = data_melt['year'].astype(int)
+data_pivot = data_melt.pivot(
+    index=['Country Name', 'Country Code', 'year'],
+    columns='Indicator Name',
+    values='value'
+).reset_index()
+poverty = pd.merge(
+    data_pivot,
+    country,
+    left_on='Country Code',
+    right_on='Country Code',
+    how='left'
+)
+
+gini_df = poverty[poverty[GINI].notna()]
 REGIONS = [
     'East Asia & Pacific', 'Europe & Central Asia', 'Fragile and conflict affected situations',
     'High income', 'IDA countries classified as fragile situations', 'IDA total',
@@ -77,6 +102,67 @@ app.layout = html.Div(
             ]
         ),
         dcc.Graph(id='population_chart'),
+        html.Br(),
+        html.H2(
+            'Gini Index - World Bank Data',
+            style={
+                'textAlign': 'center'
+            }
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.H3(
+                            'By Year',
+                            style={
+                                'textAlign': 'center'
+                            }
+                        ),
+                        dcc.Dropdown(
+                            id='gini_year_dropdown',
+                            options=[
+                                {
+                                    'label': year,
+                                    'value': year
+                                } for year in gini_df['year'].drop_duplicates().sort_values()
+                            ]
+                        ),
+                        dcc.Graph(
+                            id='gini_year_barchart'
+                        )
+                    ],
+                    style={
+                        "width": "50%"
+                    }
+                ),
+                dbc.Col(
+                    [
+                        html.H3(
+                            'By Country',
+                            style={
+                                'textAlign': 'center'
+                            }
+                        ),
+                        dcc.Dropdown(
+                            id='gini_country_dropdown',
+                            options=[
+                                {
+                                    'label': country,
+                                    'value': country
+                                } for country in gini_df['Country Name'].unique()
+                            ]
+                        ),
+                        dcc.Graph(
+                            id='gini_country_barchart'
+                        )
+                    ],
+                    style={
+                        "width": "50%"
+                    }
+                )
+            ],
+        ),
         dbc.Tabs(
             [
                 dbc.Tab(
@@ -137,15 +223,15 @@ app.layout = html.Div(
     Output("report", "children"),
     Input("country", "value")
 )
-def display_country_report(country: str) -> List:
+def display_country_report(country_to_show: str) -> List:
     """
     Generates population report by country
-    :param country: Selected country in the dropdown
+    :param country_to_show: Selected country in the dropdown
     :return: Country report
     """
     return [
-        html.H3(country),
-        f"The population of {country} in 2010 was {population_2010[country]:,.0f}."
+        html.H3(country_to_show),
+        f"The population of {country_to_show} in 2010 was {population_2010[country_to_show]:,.0f}."
     ]
 
 
@@ -163,6 +249,64 @@ def plot_countries_by_population(year):
     fig = go.Figure()
     fig.add_bar(x=year_df['Country Name'], y=year_df[year])
     fig.layout.title = f'Top twenty countries by population - {year}'
+    fig.update_layout(title_x=0.5)
+    return fig
+
+
+@app.callback(
+    Output('gini_year_barchart', 'figure'),
+    Input('gini_year_dropdown', 'value')
+)
+def plot_gini_year_barchart(year):
+    """
+    Generates figure with GINI index by year
+    :param year: Year to be shown
+    :return: Gini figure
+    """
+    if not year:
+        raise PreventUpdate
+    df = gini_df[gini_df['year'].eq(year)].sort_values(GINI).dropna(subset=[GINI])
+    n_countries = len(df['Country Name'])
+    fig = px.bar(
+        df,
+        x=GINI,
+        y='Country Name',
+        log_x=True,
+        orientation='h',
+        height=200 + (n_countries*20),
+        title=GINI + ' ' + str(year)
+    )
+    fig.update_layout(title_x=0.5)
+    return fig
+
+
+@app.callback(
+    Output('gini_country_barchart', 'figure'),
+    Input('gini_country_dropdown', 'value')
+)
+def plot_gini_country_barchart(country_to_show):
+    """
+    Generates figure with GINI index by country
+    :param country_to_show: Country from the list
+    :return: Gini figure
+    """
+    if not country_to_show:
+        raise PreventUpdate
+    df = gini_df[gini_df['Country Name'] == country_to_show].dropna(subset=[GINI])
+    n_years = [str(i) for i in list(df["year"].unique())]
+    fig = px.bar(
+        df,
+        x=GINI,
+        y=n_years,
+        labels={
+            "y": "Year"
+        },
+        log_x=True,
+        title=' - '.join([GINI, country_to_show]),
+        orientation="h",
+        height=200 + (len(n_years) * 20),
+    )
+    fig.update_layout(title_x=0.5)
     return fig
 
 
