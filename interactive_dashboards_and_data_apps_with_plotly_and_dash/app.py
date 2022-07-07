@@ -2,18 +2,17 @@
 Dash app
 """
 
+import re
 from typing import List
 
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 from dash import dcc, html
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
-import plotly.express as px
-import re
-
 
 GITHUB_LINK = 'https://github.com/PacktPublishing/' \
               'Interactive-Dashboards-and-Data-Apps-with-Plotly-and-Dash'
@@ -57,7 +56,9 @@ income_share_df = income_share_df.rename(
         'Income share held by highest 20%': '5 Income share held by highest 20%'
     }
 ).sort_index(axis=1)
-income_share_df.columns = [re.sub('\d Income share held by ', '', col).title() for col in income_share_df.columns]
+income_share_df.columns = [
+    re.sub(r'\d Income share held by ', '', col).title() for col in income_share_df.columns
+]
 income_share_cols = income_share_df.columns[:-2]
 
 gini_df = poverty[poverty[GINI].notna()]
@@ -75,6 +76,10 @@ population_df = poverty_data[
 
 
 def make_empty_fig():
+    """
+    Empty graph generator
+    :return: Empty graph
+    """
     fig = go.Figure()
     fig.layout.paper_bgcolor = '#E5ECF6'
     fig.layout.plot_bgcolor = '#E5ECF6'
@@ -306,10 +311,10 @@ def plot_gini_year_barchart(year):
     """
     if not year:
         raise PreventUpdate
-    df = gini_df[gini_df['year'].eq(year)].sort_values(GINI).dropna(subset=[GINI])
-    n_countries = len(df['Country Name'])
+    data_to_use = gini_df[gini_df['year'].eq(year)].sort_values(GINI).dropna(subset=[GINI])
+    n_countries = len(data_to_use['Country Name'])
     fig = px.bar(
-        df,
+        data_to_use,
         x=GINI,
         y='Country Name',
         log_x=True,
@@ -334,10 +339,10 @@ def plot_gini_country_barchart(country_to_show):
     """
     if not country_to_show:
         raise PreventUpdate
-    df = gini_df[gini_df['Country Name'].isin(country_to_show)].dropna(subset=[GINI])
-    n_years = [str(i) for i in list(df["year"].unique())]
+    data_to_use = gini_df[gini_df['Country Name'].isin(country_to_show)].dropna(subset=[GINI])
+    n_years = [str(i) for i in list(data_to_use["year"].unique())]
     fig = px.bar(
-        df,
+        data_to_use,
         x=GINI,
         y="year",
         log_x=True,
@@ -356,6 +361,11 @@ def plot_gini_country_barchart(country_to_show):
     Input('income_share_country_dropdown', 'value')
 )
 def plot_income_share_barchart(country_to_show):
+    """
+    Generates figure with share income graph by country
+    :param country_to_show: Country from the list
+    :return: Share income figure
+    """
     if country_to_show is None:
         raise PreventUpdate
     data_to_use = income_share_df[income_share_df['Country Name'] == country_to_show].dropna()
