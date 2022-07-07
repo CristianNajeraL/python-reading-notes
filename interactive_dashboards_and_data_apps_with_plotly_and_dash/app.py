@@ -12,6 +12,7 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
 import plotly.express as px
+import re
 
 
 GITHUB_LINK = 'https://github.com/PacktPublishing/' \
@@ -46,6 +47,19 @@ poverty = pd.merge(
     how='left'
 )
 
+income_share_df = poverty.filter(regex='Country Name|^year$|Income share.*?20').dropna()
+income_share_df = income_share_df.rename(
+    columns={
+        'Income share held by lowest 20%': '1 Income share held by lowest 20%',
+        'Income share held by second 20%': '2 Income share held by second 20%',
+        'Income share held by third 20%': '3 Income share held by third 20%',
+        'Income share held by fourth 20%': '4 Income share held by fourth 20%',
+        'Income share held by highest 20%': '5 Income share held by highest 20%'
+    }
+).sort_index(axis=1)
+income_share_df.columns = [re.sub('\d Income share held by ', '', col).title() for col in income_share_df.columns]
+income_share_cols = income_share_df.columns[:-2]
+
 gini_df = poverty[poverty[GINI].notna()]
 REGIONS = [
     'East Asia & Pacific', 'Europe & Central Asia', 'Fragile and conflict affected situations',
@@ -59,13 +73,20 @@ population_df = poverty_data[
     (poverty_data['Indicator Name'] == 'Population, total')
 ]
 
+
+def make_empty_fig():
+    fig = go.Figure()
+    fig.layout.paper_bgcolor = '#E5ECF6'
+    fig.layout.plot_bgcolor = '#E5ECF6'
+    return fig
+
+
 app = dash.Dash(
     __name__,
     external_stylesheets=[
-        dbc.themes.BOOTSTRAP
+        dbc.themes.COSMO
     ]
 )
-
 
 app.layout = html.Div(
     [
@@ -113,14 +134,10 @@ app.layout = html.Div(
             [
                 dbc.Col(
                     [
-                        html.H3(
-                            'By Year',
-                            style={
-                                'textAlign': 'center'
-                            }
-                        ),
+                        dbc.Label("Year"),
                         dcc.Dropdown(
                             id='gini_year_dropdown',
+                            placeholder="Select a year",
                             options=[
                                 {
                                     'label': year,
@@ -129,7 +146,8 @@ app.layout = html.Div(
                             ]
                         ),
                         dcc.Graph(
-                            id='gini_year_barchart'
+                            id='gini_year_barchart',
+                            figure=make_empty_fig()
                         )
                     ],
                     style={
@@ -138,14 +156,11 @@ app.layout = html.Div(
                 ),
                 dbc.Col(
                     [
-                        html.H3(
-                            'By Country',
-                            style={
-                                'textAlign': 'center'
-                            }
-                        ),
+                        dbc.Label("Country"),
                         dcc.Dropdown(
                             id='gini_country_dropdown',
+                            multi=True,
+                            placeholder="Select one or more countries",
                             options=[
                                 {
                                     'label': country,
@@ -154,14 +169,35 @@ app.layout = html.Div(
                             ]
                         ),
                         dcc.Graph(
-                            id='gini_country_barchart'
+                            id='gini_country_barchart',
+                            figure=make_empty_fig()
                         )
                     ],
                     style={
                         "width": "50%"
                     }
-                )
-            ],
+                ),
+            ]
+        ),
+        html.Br(),
+        html.H2(
+            'Income Share',
+            style={
+                'textAlign': 'center'
+            }
+        ),
+        dcc.Dropdown(
+            id='income_share_country_dropdown',
+            options=[
+                {
+                    'label': country,
+                    'value': country
+                } for country in income_share_df['Country Name'].unique()
+            ]
+        ),
+        dcc.Graph(
+            id='income_share_country_barchart',
+            figure=make_empty_fig()
         ),
         dbc.Tabs(
             [
@@ -215,7 +251,11 @@ app.layout = html.Div(
                 )
             ]
         )
-    ]
+
+    ],
+    style={
+        'backgroundColor': '#E5ECF6'
+    }
 )
 
 
@@ -250,6 +290,7 @@ def plot_countries_by_population(year):
     fig.add_bar(x=year_df['Country Name'], y=year_df[year])
     fig.layout.title = f'Top twenty countries by population - {year}'
     fig.update_layout(title_x=0.5)
+    fig.layout.paper_bgcolor = '#E5ECF6'
     return fig
 
 
@@ -277,6 +318,7 @@ def plot_gini_year_barchart(year):
         title=GINI + ' ' + str(year)
     )
     fig.update_layout(title_x=0.5)
+    fig.layout.paper_bgcolor = '#E5ECF6'
     return fig
 
 
@@ -292,23 +334,52 @@ def plot_gini_country_barchart(country_to_show):
     """
     if not country_to_show:
         raise PreventUpdate
-    df = gini_df[gini_df['Country Name'] == country_to_show].dropna(subset=[GINI])
+    df = gini_df[gini_df['Country Name'].isin(country_to_show)].dropna(subset=[GINI])
     n_years = [str(i) for i in list(df["year"].unique())]
     fig = px.bar(
         df,
         x=GINI,
-        y=n_years,
-        labels={
-            "y": "Year"
-        },
+        y="year",
         log_x=True,
-        title=' - '.join([GINI, country_to_show]),
+        title='<br>'.join([GINI, ', '.join(country_to_show)]),
+        color='Country Name',
         orientation="h",
         height=200 + (len(n_years) * 20),
     )
     fig.update_layout(title_x=0.5)
+    fig.layout.paper_bgcolor = '#E5ECF6'
+    return fig
+
+
+@app.callback(
+    Output('income_share_country_barchart', 'figure'),
+    Input('income_share_country_dropdown', 'value')
+)
+def plot_income_share_barchart(country_to_show):
+    if country_to_show is None:
+        raise PreventUpdate
+    data_to_use = income_share_df[income_share_df['Country Name'] == country_to_show].dropna()
+    fig = px.bar(
+        data_to_use,
+        x=income_share_cols,
+        y=[str(i) for i in data_to_use['Year'].sort_values().values],
+        labels={
+            "y": "Year"
+        },
+        barmode='stack',
+        height=600,
+        hover_name='Country Name',
+        title=f'Income Share Quintiles - {country_to_show}',
+        orientation='h'
+    )
+    fig.update_layout(title_x=0.5)
+    fig.layout.legend.title = None
+    fig.layout.legend.orientation = 'h'
+    fig.layout.legend.x = 0.35
+    fig.layout.xaxis.title = 'Percent of Total Income'
+    fig.layout.paper_bgcolor = '#E5ECF6'
     return fig
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=True, host="0.0.0.0")
