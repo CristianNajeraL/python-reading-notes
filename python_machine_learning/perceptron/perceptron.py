@@ -1,5 +1,5 @@
 """
-Perceptron implementation
+Perceptron classifier implementation
 """
 
 import numpy as np
