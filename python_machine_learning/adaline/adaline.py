@@ -7,7 +7,7 @@ from typing import NoReturn
 import numpy as np
 
 
-class Adaline:  # pylint: disable=E1101 disable=R0902
+class Adaline:  # pylint: disable=E1101 disable=R0902 disable=R0801
     """
     Adaptive Linear Neuron classifier with Gradient Descendent
 
