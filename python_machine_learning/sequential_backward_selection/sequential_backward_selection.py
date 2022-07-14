@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
 
-class SequentialBackwardSelection:  # pylint: disable=R0913 disable=R0902
+class SequentialBackwardSelection:  # pylint: disable=R0913 disable=R0902 disable=R0903
     """
     Sequential Backward Selection class
 
